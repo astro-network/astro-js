@@ -25,6 +25,5 @@ ark-std = { git = "https://github.com/arkworks-rs/utils", default-features = fal
 
 [features]
 default = ["parallel"]
-# ark features
 std = ["ark-ff/std", "ark-groth16/std", "ark-pcd/std", "ark-r1cs-std/std", "ark-relations/std", "ark-std/std"]
 parallel = ["std", "ark-ff/parallel", "ark-groth16/parallel", "ark-pcd/parallel", "ark-r1cs-std/parallel", "ark-std/parallel"]

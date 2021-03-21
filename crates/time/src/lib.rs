@@ -6,7 +6,7 @@ use sha2::Sha256;
 ///
 pub enum Clock {
     v0 {
-        clock: v0::BloomClock<u8, Sha256, 2, 8>,
+        clock: v0::BloomClock<usize, Sha256, 2, 8>,
         // var: v0::BloomClockVar<UInt8, _, 2, 8>,
     },
 }

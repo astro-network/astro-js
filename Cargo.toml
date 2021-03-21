@@ -1,11 +1,13 @@
 [workspace]
 members = [
   "crates/credit",
+  "crates/persona",
   "crates/time",
 
   # vendored
   "vendor/asm-ed25519",
   # "vendor/bls",
   # "vendor/ed25519-dalek",
-  "vendor/multi-party-eddsa",
+  # "vendor/merkle-log",
+  # "vendor/multi-party-eddsa",
 ]

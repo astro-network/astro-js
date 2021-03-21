@@ -6,12 +6,18 @@ use std::{
     collections::HashMap,
     fmt::Debug,
     marker::PhantomData,
-    ops::{AddAssign, Sub},
+    ops::{AddAssign, Rem, Sub},
 };
 
 /// Marker trait for types that can be used as a clock element.
-pub trait Counter: Copy + Debug + Ord + Unsigned + One + Zero + AddAssign {}
-impl<C: Copy + Debug + Ord + Unsigned + One + Zero + AddAssign> Counter for C {}
+pub trait Counter:
+    Copy + Debug + Ord + Unsigned + One + Zero + AddAssign + Rem<usize, Output = Self>
+{
+}
+impl<C: Copy + Debug + Ord + Unsigned + One + Zero + AddAssign + Rem<usize, Output = Self>> Counter
+    for C
+{
+}
 
 /// A simple bloom clock, based on a counting bloom filter, as defined by
 /// [arXiv:1905.13064].
@@ -36,8 +42,17 @@ impl<C: Counter, D: Digest, const K: usize, const M: usize> Default for BloomClo
 
 impl<C: Counter, D: Digest, const K: usize, const M: usize> BloomClock<C, D, K, M> {
     /// Provides access to the inner slice.
+    #[inline(always)]
     pub fn inner(&self) -> &[C; M] {
         &self.inner
+    }
+
+    ///
+    pub fn size(&self) -> C {
+        self.inner.iter().fold(C::zero(), |mut acc, c| {
+            acc += *c;
+            acc % K
+        })
     }
 
     ///
@@ -66,7 +81,7 @@ impl<C: Counter, D: Digest, const K: usize, const M: usize> BloomClock<C, D, K, 
     /// Returns the indices in the clock to be incremented for a given event's
     /// bytes.
     pub fn indices_for_event(event: &[u8]) -> [usize; K] {
-        Self(D::new().chain(event))
+        Self::indices_for_prehashed(D::new().chain(event))
     }
 
     ///
@@ -192,7 +207,7 @@ impl<C: Counter, D: Digest, const K: usize, const M: usize> PartialEq for BloomC
 }
 
 ///
-fn filter_false_pos_rate(k: u16, m: usize, n: usize) -> f64 {
+fn filter_false_pos_rate(k: usize, m: usize, n: usize) -> f64 {
     let bit_not_one = 1f64 - (m as f64).recip();
     let k_bits_not_one = bit_not_one.powi(k as i32);
     let k_bits_not_one_after_n = k_bits_not_one.powf(n as f64);
@@ -200,6 +215,6 @@ fn filter_false_pos_rate(k: u16, m: usize, n: usize) -> f64 {
 }
 
 ///
-fn clock_false_pos_rate(k: u16, m: usize) -> f64 {
+fn clock_false_pos_rate(k: usize, m: usize) -> f64 {
     unimplemented!()
 }
